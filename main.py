@@ -1,0 +1,510 @@
+import discord
+from discord.ext import commands, tasks
+from discord.utils import get
+import os
+import json
+import random
+
+client = commands.Bot(command_prefix = "!")
+
+#------------------------------------------------#
+#                                                #
+#           Timer point + Reset BEG              #
+#                                                #
+#------------------------------------------------#
+
+@tasks.loop(seconds=86000)
+async def reset():
+  print("reset")
+  users = await get_bank_data()
+  for user in users:
+    users[str(user)]["beg"] = 0
+    users[str(user)]["give"] = 0
+  with open(os.getenv('USER_JSON'),"w") as f:
+    json.dump(users,f)
+
+@tasks.loop(seconds=3600)
+async def freePoint():
+  print("freePoint")
+  users = await get_bank_data()
+  for user in users:
+    users[str(user)]["wallet"] += 5
+  with open(os.getenv('USER_JSON'),"w") as f:
+    json.dump(users,f)
+
+
+#------------------------------------------------#
+#                                                #
+#                  LeaderBoard                   #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def lb(ctx, param:int):
+  users = await get_bank_data()
+
+
+
+  for u in users:
+    pass
+
+
+#------------------------------------------------#
+#                                                #
+#                      Bet                       #
+#                                                #
+#------------------------------------------------#
+
+"""
+@client.command()
+async def bet(ctx, param:int):
+
+  user = ctx.author
+  users = await get_bank_data()
+  react = await get_reaction_data()
+  userWallet = users[str(user.id)]["wallet"]
+
+  if userWallet < param:
+    await ctx.send(f"Vous n'avez pas assez de Coins. ({userWallet}/{param})")
+  else:
+    await ctx.send("Quel pari voulez-vous faire ?")
+
+  def checkMessage(message):
+    return message.author == ctx.message.author
+
+  try:
+    pari = await client.wait_for("message", timeout = 60, check = checkMessage)
+    message = await ctx.send(f"**{pari.content}** | Veuillez votez en réagissant avec ✅ ou avec ❌ | Somme pour parier ({param})")
+    
+    react["reaction_message"] = {}
+    react["reaction_message"]["id"] = message.id
+    with open(os.getenv('REACT_JSON'),"w") as f:
+      json.dump(react,f)
+
+    await message.add_reaction("✅")
+    await message.add_reaction("❌")
+
+    def checkEmoji(reaction, user):
+      return ctx.message.author == user and message.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+
+    try:
+      reaction, user = await client.wait_for("reaction_add", timeout = 60, check = checkEmoji)
+      if reaction.emoji == "✅":
+        await ctx.send(f"Fin du vote ! Résultat : ✅")
+      else:
+        await ctx.send(f"Fin du vote ! Résultat : ❌")
+    except:
+      await ctx.send("Le pari est fermé.")
+
+  except:
+    await ctx.send("Veuillez réitérer la commande.")
+    return
+
+@client.event
+async def on_reaction_add(reaction, user):
+  react = await get_reaction_data()
+  bet = await get_bet_data()
+
+  channel = react["reaction_message"]["id"]
+  print(channel)
+  if reaction.message.channel.id != channel:
+    print("False")
+    return False
+  else:
+    if reaction.emoji == "✅":
+      print("testBET")
+      bet[str(user.id)]["name"] = user.name
+      with open(os.getenv('BET_JSON'),"w") as f:
+        json.dump(bet,f)
+      await ctx.send(f"Nouveau vote : ✅")
+          
+"""
+
+#------------------------------------------------#
+#                                                #
+#                 Kick Server                    #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def kick(ctx, person :discord.Member = None):
+
+  if person is None:
+    await ctx.send("Vous devez renseigner le pseudo de la personne | Ex : **!kick @Ursule**")
+    return
+  else :
+
+    user = ctx.author
+    users = await get_bank_data()
+    userWallet = users[str(user.id)]["wallet"]
+
+    if userWallet >= 5000:
+      for u in users:
+        if person.name == users[str(u)]["name"]:
+            reason = f"{user.name} t'a kick du server pour 5000 Coins."
+            await ctx.send(f"{person.name} a été kick du serveur par {user.name}, pour 5000 Coins")
+            await person.kick(reason=reason)
+            users[str(user.id)]["wallet"] -= 5000
+            with open(os.getenv('USER_JSON'),"w") as f:
+              json.dump(users,f)
+            return True
+    else:
+      await ctx.send(f"Vous ne posséder pas assez de Coins. ({userWallet}/5000)")
+
+
+#------------------------------------------------#
+#                                                #
+#                 Mute Server                    #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def mute(ctx, person : discord.Member = None):
+
+  if person is None:
+    await ctx.send("Vous devez renseigner le pseudo de la personne | Ex : **!mute @Ursule**")
+    return
+  else :
+    user = ctx.author
+    users = await get_bank_data()
+    userWallet = users[str(user.id)]["wallet"]
+
+    if userWallet < 2000:
+      await ctx.send("Vous n'avez pas assez de Coins. ({}/2000)".format(userWallet))
+      return
+    else:
+      await person.edit(mute = True)
+      await ctx.send(f"{person} a été mute par {user.name}.")
+      users[str(user.id)]["wallet"] -= 2000
+      with open(os.getenv('USER_JSON'),"w") as f:
+              json.dump(users,f)
+
+"""
+
+MUTE TEXT
+
+
+async def muteText(ctx, person : discord.Member = None):
+
+  role = ctx.guild.get_role(798530143974195212)
+  print(" AZERTY ROLE : ")
+  print(role)
+  if person is None:
+    await ctx.send("Vous devez renseigner le pseudo de la personne | Ex : **!mute @Ursule**")
+    return
+  else :
+    user = ctx.author
+    users = await get_bank_data()
+    userWallet = users[str(user.id)]["wallet"]
+
+    if userWallet < 2000:
+      await ctx.send("Vous n'avez pas assez de Coins. ({}/2000)".format(userWallet))
+      return
+    else:
+      await person.add_roles(role)
+      await ctx.send(f"{person} a été mute par {user.name}.")
+"""
+
+#------------------------------------------------#
+#                                                #
+#               Voleur de Coins                  #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def ludoVoleur(ctx, param : int, person : discord.Member = None):
+  if person == None :
+    await ctx.send("Veuillez renseigner la personne à voler.")
+  else:
+    
+    user = ctx.author
+    users = await get_bank_data()
+    userWallet = users[str(user.id)]["wallet"]
+    
+    if userWallet < param:
+      await ctx.send(f'Vous n\'avez pas assez de points. ({userWallet}/{param})')
+    else : 
+      userWalletPoint = users[str(person.id)]["wallet"]
+      if userWalletPoint < param:
+        await ctx.send(f'Votre cible n\'a pas assez de points. ({userWalletPoint}/{param})')
+      else:
+        rand = random.uniform(0, 1)
+        print(rand)
+        if rand >= 0.65:
+          users[str(person.id)]["wallet"] -= param
+          users[str(user.id)]["wallet"] += param
+          await ctx.send(f'{param} Coins ont été retirés du Wallet de {person} et ont été ajoutés au vôtre.' )
+          with open(os.getenv('USER_JSON'),"w") as f:
+            json.dump(users,f)
+        else:
+          users[str(person.id)]["wallet"] += param
+          users[str(user.id)]["wallet"] -= param
+          await ctx.send(f'{param} Coins ont été retirés de votre Wallet et ont été ajoutés au Wallet d\'{person}.' )
+          with open(os.getenv('USER_JSON'),"w") as f:
+            json.dump(users,f)
+      
+        
+
+#------------------------------------------------#
+#                                                #
+#                    Random                      #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def rand(ctx, param:int):
+
+    user = ctx.author
+    users = await get_bank_data()
+    userWalletoint = users[str(user.id)]["wallet"]
+
+    if users[str(user.id)]["wallet"] < param:
+      await ctx.send(f'Vous n\'avez pas assez de Coins. ({userWalletoint}/{param})' )
+      return False
+    else:
+      rand = random.uniform(0, 1)
+      print(rand)
+      if rand <= 0.5:
+        users[str(user.id)]["wallet"] -= param
+        await ctx.send(f'{param} Coins ont été retirés de votre Wallet.' )
+        with open(os.getenv('USER_JSON'),"w") as f:
+          json.dump(users,f)
+      else:
+        users[str(user.id)]["wallet"] += param
+        await ctx.send(f'{param} Coins ont été ajoutés à votre Wallet.' )
+        with open(os.getenv('USER_JSON'),"w") as f:
+          json.dump(users,f)
+      return True
+
+
+#------------------------------------------------#
+#                                                #
+#                     Give                       #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def give(ctx, param: int, person : discord.Member = None):
+  if person == None :
+    await ctx.send("Vous devez renseigner à qui vous voulez donner vos Coins.")
+  else:
+    user = ctx.author
+    users = await get_bank_data()
+    userWalletoint = users[str(user.id)]["wallet"]
+
+    if users[str(user.id)]["wallet"] < param:
+      await ctx.send(f'Vous n\'avez pas assez de points. ({userWalletoint}/{param})' )
+      return False
+    else:
+      if users[str(user.id)]["give"] > 1:
+        await ctx.send(f'Vous avez déjà give une fois aujourd\'hui.' )
+        return False
+      else:
+        users[str(user.id)]["wallet"] -= param
+        users[str(user.id)]["give"] += 1
+        users[str(person.id)]["wallet"] += param
+        await ctx.send(f'{param} coins ont été transférés à {person}' )
+        with open(os.getenv('USER_JSON'),"w") as f:
+          json.dump(users,f)
+        return True
+        
+      
+
+#------------------------------------------------#
+#                                                #
+#               Pitier monsieur                  #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def pitierMonsieur(ctx):
+
+    user = ctx.author
+    users = await get_bank_data()
+
+    if (users[str(user.id)]["wallet"] <= 10 and users[str(user.id)]["bank"] <= 10):
+      await ctx.send(f'Il s\'agirait d\'arrêter de parier monsieur ! Voici 50 coins pour vous refaire' )
+      users[str(user.id)]["wallet"] += 50
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+      return True
+    else:
+      await ctx.send(f'Vous avez encore assez de points sur votre compte.' )
+      return False
+        
+
+#------------------------------------------------#
+#                                                #
+#                    Balance                     #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def balance(ctx):
+    await open_account(ctx.author)
+
+    user = ctx.author
+    users = await get_bank_data()
+
+    wallet_amt = users[str(user.id)]["wallet"]
+    bank_amt = users[str(user.id)]["bank"]
+
+    em = discord.Embed(title = f"Coins : {ctx.author.name}",color = discord.Color.red())
+    em.add_field(name = "Wallet", value = wallet_amt)
+    em.add_field(name = "Bank", value = bank_amt)
+    await ctx.send(embed = em)
+
+
+#------------------------------------------------#
+#                                                #
+#                 Beg aléatoire                  #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def beg(ctx):
+
+    user = ctx.author
+    users = await get_bank_data()
+
+    if users[str(user.id)]["beg"] < 3:
+      earnings = random.randrange(11)
+
+      await ctx.send(f"Quelqu'un t'a donné {earnings} Coins !")
+
+      users[str(user.id)]["wallet"] += earnings
+      users[str(user.id)]["beg"] += 1
+
+      with open(os.getenv('USER_JSON'),"w") as f:
+          json.dump(users,f)
+      
+    else:
+      await ctx.send(f"Tu as déjà utilisé trop de fois cette commande aujourd'hui ! Reviens demain.")
+
+
+
+
+#------------------------------------------------#
+#                                                #
+#              Transfert to Bank                 #
+#                                                #
+#------------------------------------------------#
+
+
+@client.command()
+async def tC(ctx, param:int):
+    user = ctx.author
+    users = await get_bank_data()
+    userWalletoint = users[str(user.id)]["wallet"]
+
+    if users[str(user.id)]["wallet"] < param:
+      await ctx.send(f'Vous n\'avez pas assez de points. ({userWalletoint}/{param})' )
+      return False
+    else:
+      users[str(user.id)]["wallet"] -= param
+      users[str(user.id)]["bank"] += param
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+      await ctx.send(f'{param} Coins ont été transférés à votre banque.' )
+      return True
+
+@client.command()
+async def tCAll(ctx):
+
+    user = ctx.author
+    users = await get_bank_data()
+
+    users[str(user.id)]["bank"] += users[str(user.id)]["wallet"]
+    users[str(user.id)]["wallet"] = 0
+    with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+    await ctx.send(f'Tous vos Coins ont été transférés dans votre banque.' )
+    return True
+
+#------------------------------------------------#
+#                                                #
+#             Transfert to Wallet                #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def gC(ctx, param:int):
+
+    user = ctx.author
+    users = await get_bank_data()
+    userWalletoint = users[str(user.id)]["bank"]
+
+    if users[str(user.id)]["bank"] < param:
+      await ctx.send(f'Vous n\'avez pas assez de points. ({userWalletoint}/{param})' )
+      return False
+    else:
+      users[str(user.id)]["bank"] -= param
+      users[str(user.id)]["wallet"] += param
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+      await ctx.send(f'{param} Coins ont été transférés à votre Wallet.' )
+      return True
+
+@client.command()
+async def gCAll(ctx):
+
+    user = ctx.author
+    users = await get_bank_data()
+
+    users[str(user.id)]["wallet"] += users[str(user.id)]["bank"]
+    users[str(user.id)]["bank"] = 0
+    with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+    await ctx.send(f'Tous vos Coins ont été transférés dans votre Wallet.' )
+    return True
+
+#------------------------------------------------#
+#                                                #
+#              Création de compte                #
+#                                                #
+#------------------------------------------------#
+
+async def open_account(user):
+    users = await get_bank_data()
+
+    if str(user.id) in users:
+      return False
+    else:
+      users[str(user.id)] = {}
+      users[str(user.id)]["wallet"] = 0
+      users[str(user.id)]["bank"] = 200
+      users[str(user.id)]["beg"] = 0
+      users[str(user.id)]["give"] = 0
+
+    with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+    return True
+
+#------------------------------------------------#
+#                                                #
+#           Récupération des données             #
+#                                                #
+#------------------------------------------------#
+
+async def get_bank_data():
+  with open(os.getenv('USER_JSON'),"r") as f:
+    users = json.load(f)
+  return users
+
+async def get_reaction_data():
+  with open(os.getenv('REACT_JSON'),"r") as f:
+    react = json.load(f)
+  return react
+
+async def get_bet_data():
+  with open(os.getenv('BET_JSON'),"r") as f:
+    bet = json.load(f)
+  return bet
+
+@client.event
+async def on_ready():
+  print('Bot NLB est prêt !' )
+  reset.start()
+  freePoint.start()
+
+client.run(os.getenv('TOKEN'))
