@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 from discord.utils import get
+from math import *
 import os
 import json
 import random
@@ -13,25 +14,45 @@ client = commands.Bot(command_prefix = "!")
 #                                                #
 #------------------------------------------------#
 
+client.checkReset = False
 @tasks.loop(seconds=86000)
 async def reset():
-  print("reset")
-  users = await get_bank_data()
-  for user in users:
-    users[str(user)]["beg"] = 0
-    users[str(user)]["give"] = 0
-  with open(os.getenv('USER_JSON'),"w") as f:
-    json.dump(users,f)
+  if client.checkReset == False :
+    client.checkReset = True
+  else:
+    print("reset")
+    users = await get_bank_data()
+    for user in users:
+      users[str(user)]["beg"] = 0
+      users[str(user)]["give"] = 0
+    with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
 
+client.checkFree = False
 @tasks.loop(seconds=3600)
 async def freePoint():
-  print("freePoint")
-  users = await get_bank_data()
-  for user in users:
-    users[str(user)]["wallet"] += 5
-  with open(os.getenv('USER_JSON'),"w") as f:
-    json.dump(users,f)
+  if client.checkFree == False :
+    client.checkFree = True
+  else:
+    print("freePoint")
+    users = await get_bank_data()
+    for user in users:
+      users[str(user)]["wallet"] += 5
+    with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
 
+client.checkInterest = False
+@tasks.loop(seconds=604800)
+async def interest():
+  if client.checkInterest == False :
+    client.checkInterest = True
+  else:
+    print("interest")
+    users = await get_bank_data()
+    for user in users:
+      users[str(user)]["bank"] =  ceil(users[str(user)]["bank"]*1.05)
+    with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
 
 #------------------------------------------------#
 #                                                #
@@ -340,12 +361,13 @@ async def pitierMonsieur(ctx):
 #------------------------------------------------#
 
 @client.command()
-async def balance(ctx):
-    await open_account(ctx.author)
+async def balance(ctx, person : discord.Member = None):
+  
+  await open_account(ctx.author)
+  user = ctx.author
+  users = await get_bank_data()
 
-    user = ctx.author
-    users = await get_bank_data()
-
+  if person == None:
     wallet_amt = users[str(user.id)]["wallet"]
     bank_amt = users[str(user.id)]["bank"]
 
@@ -353,7 +375,34 @@ async def balance(ctx):
     em.add_field(name = "Wallet", value = wallet_amt)
     em.add_field(name = "Bank", value = bank_amt)
     await ctx.send(embed = em)
+  else:
+    wallet_amt = users[str(person.id)]["wallet"]
+    bank_amt = users[str(person.id)]["bank"]
 
+    em = discord.Embed(title = f"Coins : {person.name}",color = discord.Color.red())
+    em.add_field(name = "Wallet", value = wallet_amt)
+    em.add_field(name = "Bank", value = bank_amt)
+    await ctx.send(embed = em)
+    
+"""
+@client.command()
+async def balanceP(ctx, person : discord.Member = None):
+  await open_account(ctx.author)
+  user = ctx.author
+  users = await get_bank_data()
+  print("Balance : pseudo")
+    
+  wallet_amt = users[str(person.id)]["wallet"]
+  bank_amt = users[str(person.id)]["bank"]
+
+  print(f"Wallet_amt : {wallet_amt}")
+  print(f"bank_amt : {bank_amt}")
+
+  em = discord.Embed(title = f"Coins : {person.name}",color = discord.Color.red())
+  em.add_field(name = "Wallet", value = wallet_amt)
+  em.add_field(name = "Bank", value = bank_amt)
+  await ctx.send(embed = em)
+"""
 
 #------------------------------------------------#
 #                                                #
@@ -506,5 +555,6 @@ async def on_ready():
   print('Bot NLB est prêt !' )
   reset.start()
   freePoint.start()
+  interest.start()
 
 client.run(os.getenv('TOKEN'))
