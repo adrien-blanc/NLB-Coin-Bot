@@ -1,6 +1,6 @@
-Voici les commandes que vous pourrez utiliser avec le BOT Nique La Bac :
+<h1>Voici les commandes que vous pourrez utiliser avec le BOT Nique La Bac :</h1>
 
-COMMANDES PRINCIPALES :
+<h2>COMMANDES PRINCIPALES :</h2>
 
 !balance <pseudo> : Permet de voir l'état de vos comptes ou du compte d'un ami. | Permet également d'initialiser votre compte. | Ex : !balance ou !balance @Ursule
 
@@ -10,7 +10,7 @@ COMMANDES PRINCIPALES :
 
 
 
-COMMANDES TRANSFERT Banque / Wallet :
+<h2>COMMANDES TRANSFERT Banque / Wallet :</h2>
 
 Transférer des Coins dans votre banque : 
 
@@ -19,7 +19,7 @@ Transférer des Coins dans votre banque :
 !tCAll : Permet de transférer tout votre Wallet dans votre banque. 
 
 
-Transférer des Coins dans votre Wallet :
+<h2>Transférer des Coins dans votre Wallet :</h2>
 
 !gC <int> : Permet de transférer une somme définit dans votre Wallet | Ex : !gC 50
 
@@ -27,7 +27,7 @@ Transférer des Coins dans votre Wallet :
 
 
 
-COMMANDES TRANSFERT User / User  :
+<h2>COMMANDES TRANSFERT User / User  :</h2>
 
 Si vous voulez donner des Coins à votre meilleur ami (C'est franchement sympa) /!\ Vous ne pourrez donner qu'une fois par jour /!\  :
 
@@ -40,7 +40,7 @@ Si vous voulez voler quelques Coins à votre "meilleur" ami, juste Let's GO pren
 !ludoVoleur <int> <pseudo> : Permet d'avoir une chance de voler les précieux Coins d'une personne. | Ex : !ludoVoleur 50 @Ursule
 
 
-COMMANDES AVANTAGES Coins  :
+<h2>COMMANDES AVANTAGES Coins  :</h2>
 
 C'est bien beau d'acquérir tous ces Coins, mais a quoi servent-ils ? 
 Voici une liste des commandes à utiliser contre des Coins : 
@@ -56,13 +56,13 @@ Mute (vocal) une personne de votre choix :
 Prix : 2000 Coins
 !mute <pseudo> : Permet de mute une personne du serveur pendant 1 jour (Des exceptions pourront-être faites si le jour en question est important !) | Ex : !mute @Ursule
 
-COMMANDES OH SHIT :
+<h2>COMMANDES OH SHIT :</h2>
 
 Si vous venez a être à court de Coins, ne pas paniquer, une commande est faites pour vous : 
 
 !pitierMonsieur : Vous redonne 50 Coins gratuitement si votre Wallet et votre banque sont inférieurs à 10 Coins.
 
-REGLES PRINCIPALES : 
+<h2>REGLES PRINCIPALES : </h2>
 
 Les Coins mis dans votre banque sont en sécurité, personne ne pourra vous les voler, même avec un !ludoVoleur sauvage.
 
