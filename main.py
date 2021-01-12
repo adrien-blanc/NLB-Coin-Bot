@@ -42,7 +42,7 @@ async def freePoint():
       json.dump(users,f)
 
 client.checkInterest = False
-@tasks.loop(seconds=604800)
+@tasks.loop(seconds=86000)
 async def interest():
   if client.checkInterest == False :
     client.checkInterest = True
@@ -50,7 +50,7 @@ async def interest():
     print("interest")
     users = await get_bank_data()
     for user in users:
-      users[str(user)]["bank"] =  ceil(users[str(user)]["bank"]*1.05)
+      users[str(user)]["bank"] =  ceil(users[str(user)]["bank"]*1.01)
     with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
 
