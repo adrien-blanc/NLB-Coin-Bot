@@ -317,7 +317,7 @@ async def give(ctx, param: int, person : discord.Member = None):
       await ctx.send(f'Vous n\'avez pas assez de points. ({userWalletoint}/{param})' )
       return False
     else:
-      if users[str(user.id)]["give"] > 1:
+      if users[str(user.id)]["give"] > 0:
         await ctx.send(f'Vous avez déjà give une fois aujourd\'hui.' )
         return False
       else:
