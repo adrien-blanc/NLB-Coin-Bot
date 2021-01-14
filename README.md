@@ -56,6 +56,12 @@ Mute (vocal) une personne de votre choix :
 Prix : **2000 Coins**
 **!mute <pseudo>** : Permet de mute une personne du serveur pendant 1 jour (Des exceptions pourront-être faites si le jour en question est important !) | Ex : !mute @Ursule
 
+Unmute (vocal) :
+
+Prix : **1500 Coins**
+**!unmute** : Permet de  vous unmute si vous avez été mute par quelqu'un.
+
+
 <h2>COMMANDES OH SHIT :</h2>
 
 Si vous venez a être à court de Coins, ne pas paniquer, une commande est faites pour vous : 
