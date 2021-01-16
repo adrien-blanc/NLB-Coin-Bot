@@ -25,7 +25,7 @@ async def reset():
     for user in users:
       users[str(user)]["beg"] = 0
       users[str(user)]["give"] = 0
-      users[str(user.id)]["pitier"] = 0
+      users[str(user)]["pitier"] = 0
     with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
 
@@ -61,12 +61,31 @@ async def interest():
 #                                                #
 #------------------------------------------------#
 
-@client.command()
-async def lb(ctx, param:int):
+@client.command(aliases = ["rank"])
+async def leaderboard(ctx,x = 5):
   users = await get_bank_data()
+  leader_board = {}
+  total = []
+  for user in users:
+      name = int(user)
+      total_amount = users[user]["wallet"] + users[user]["bank"]
+      leader_board[total_amount] = name
+      total.append(total_amount)
 
-  for u in users:
-    pass
+  total = sorted(total,reverse=True)    
+
+  em = discord.Embed(title = f"Nique La Bac top {x}" , description = "Classement fait sur le total de Coins contenu dans la banque et dans le wallet de chacun.",color = discord.Color(0x053599))
+  index = 1
+  for amt in total:
+      id_ = leader_board[amt]
+      member = await client.fetch_user(id_)
+      em.add_field(name = f"{index}. {member.name}" , value = f"{amt}",  inline = False)
+      if index == x:
+          break
+      else:
+          index += 1
+
+  await ctx.send(embed = em)
 
 
 #------------------------------------------------#
@@ -74,7 +93,7 @@ async def lb(ctx, param:int):
 #                      Bet                       #
 #                                                #
 #------------------------------------------------#
-
+"""
 
 @client.command()
 async def bet(ctx, param:int):
@@ -137,7 +156,7 @@ async def on_reaction_add(reaction, user):
       with open(os.getenv('BET_JSON'),"w") as f:
         json.dump(bet,f)
       await ctx.send(f"Nouveau vote : ✅")
-          
+    """      
 
 
 #------------------------------------------------#
@@ -159,15 +178,11 @@ async def kick(ctx, person :discord.Member = None):
     userWallet = users[str(user.id)]["wallet"]
 
     if userWallet >= 5000:
-      for u in users:
-        if person.name == users[str(u)]["name"]:
-            reason = f"{user.name} t'a kick du server pour 5000 Coins."
-            await ctx.send(f"{person.name} a été kick du serveur par {user.name}, pour 5000 Coins")
-            await person.kick(reason=reason)
-            users[str(user.id)]["wallet"] -= 5000
-            with open(os.getenv('USER_JSON'),"w") as f:
-              json.dump(users,f)
-            return True
+      await ctx.send(f"{person.name} a été kick du serveur par {user.name}, pour 5000 Coins")
+      await person.kick()
+      users[str(user.id)]["wallet"] -= 5000
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
     else:
       await ctx.send(f"({user.name}) | Vous ne posséder pas assez de Coins. ({userWallet}/5000)")
 
@@ -194,35 +209,25 @@ async def mute(ctx, person : discord.Member = None):
       return
     else:
       await person.edit(mute = True)
-      await ctx.send(f"{person} a été mute par {user.name}.")
+      await ctx.send(f"{person} a été mute par {user.name} pour **2000 Coins**.")
       users[str(user.id)]["wallet"] -= 2000
       with open(os.getenv('USER_JSON'),"w") as f:
               json.dump(users,f)
-
 """
-
-MUTE TEXT
-
-
+@client.command()
 async def muteText(ctx, person : discord.Member = None):
 
-  role = ctx.guild.get_role(798530143974195212)
+  role = ctx.guild.get_role(799999674072694805)
   print(" AZERTY ROLE : ")
   print(role)
   if person is None:
-    await ctx.send("Vous devez renseigner le pseudo de la personne | Ex : **!mute @Ursule**")
-    return
+    await ctx.send("Vous devez renseigner le pseudo de la personne | Ex : **!muteText @Ursule**")
   else :
     user = ctx.author
     users = await get_bank_data()
-    userWallet = users[str(user.id)]["wallet"]
-
-    if userWallet < 2000:
-      await ctx.send("Vous n'avez pas assez de Coins. ({}/2000)".format(userWallet))
-      return
-    else:
-      await person.add_roles(role)
-      await ctx.send(f"{person} a été mute par {user.name}.")
+  
+    await person.add_roles(role)
+    await ctx.send(f"{person} a été mute par {user.name}.")
 """
 
 #------------------------------------------------#
@@ -411,26 +416,7 @@ async def balance(ctx, person : discord.Member = None):
     em.add_field(name = "Wallet", value = wallet_amt)
     em.add_field(name = "Bank", value = bank_amt)
     await ctx.send(embed = em)
-    
-"""
-@client.command()
-async def balanceP(ctx, person : discord.Member = None):
-  await open_account(ctx.author)
-  user = ctx.author
-  users = await get_bank_data()
-  print("Balance : pseudo")
-    
-  wallet_amt = users[str(person.id)]["wallet"]
-  bank_amt = users[str(person.id)]["bank"]
 
-  print(f"Wallet_amt : {wallet_amt}")
-  print(f"bank_amt : {bank_amt}")
-
-  em = discord.Embed(title = f"Coins : {person.name}",color = discord.Color.red())
-  em.add_field(name = "Wallet", value = wallet_amt)
-  em.add_field(name = "Bank", value = bank_amt)
-  await ctx.send(embed = em)
-"""
 
 #------------------------------------------------#
 #                                                #
@@ -542,21 +528,24 @@ async def gCAll(ctx):
 #------------------------------------------------#
 
 async def open_account(user):
-    users = await get_bank_data()
+  users = await get_bank_data()
 
-    if str(user.id) in users:
-      return False
-    else:
-      users[str(user.id)] = {}
-      users[str(user.id)]["wallet"] = 0
-      users[str(user.id)]["bank"] = 200
-      users[str(user.id)]["beg"] = 0
-      users[str(user.id)]["give"] = 0
-      users[str(user.id)]["pitier"] = 0
+  if str(user.id) in users:
+    return False
+  else:
+    users[str(user.id)] = {}
+    users[str(user.id)]["wallet"] = 0
+    users[str(user.id)]["bank"] = 200
+    users[str(user.id)]["beg"] = 0
+    users[str(user.id)]["give"] = 0
+    users[str(user.id)]["pitier"] = 0
 
-    with open(os.getenv('USER_JSON'),"w") as f:
-        json.dump(users,f)
-    return True
+  with open(os.getenv('RANK_JSON'),"w") as f:
+      json.dump(rank,f)
+
+  with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
+
 
 #------------------------------------------------#
 #                                                #
