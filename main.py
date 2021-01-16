@@ -25,7 +25,7 @@ async def reset():
     for user in users:
       users[str(user)]["beg"] = 0
       users[str(user)]["give"] = 0
-      users[str(user.id)]["pitier"] = 0
+      users[str(user)]["pitier"] = 0
     with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
 
@@ -62,7 +62,7 @@ async def interest():
 #------------------------------------------------#
 
 @client.command()
-async def lb(ctx, param:int):
+async def rank(ctx, param:int):
   users = await get_bank_data()
 
   for u in users:
