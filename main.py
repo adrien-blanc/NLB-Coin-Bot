@@ -5,6 +5,7 @@ from math import *
 import os
 import json
 import random
+import asyncio
 
 client = commands.Bot(command_prefix = "!")
 
@@ -64,6 +65,7 @@ async def interest():
 @client.command(aliases = ["rank"])
 async def leaderboard(ctx,x = 5):
   users = await get_bank_data()
+  users.pop('798302007106338839')
   leader_board = {}
   total = []
   for user in users:
@@ -86,6 +88,99 @@ async def leaderboard(ctx,x = 5):
           index += 1
 
   await ctx.send(embed = em)
+
+
+#------------------------------------------------#
+#                                                #
+#                    Giveway                     #
+#                                                #
+#------------------------------------------------#
+
+
+def convert(time):
+    pos = ["s","m","h","d"]
+
+    time_dict = {"s" : 1, "m" : 60, "h" : 3600 , "d" : 3600*24}
+
+    unit = time[-1]
+
+    if unit not in pos:
+        return -1
+    try:
+        val = int(time[:-1])
+    except:
+        return -2
+
+
+    return val * time_dict[unit]
+
+
+@client.command()
+async def giveaway(ctx):
+
+  users = await get_bank_data()
+
+  await ctx.send("Le giveway commence !")
+  questions = ["Sur quel channel ?", 
+              "Quel est la durée de ton giveway ? (s|m|h|d) | Ex : *30m* pour 30 minutes.",
+              "Quel est le prix du giveaway ?"]
+  answers = []
+  def check(m):
+      return m.author == ctx.author and m.channel == ctx.channel 
+
+  for i in questions:
+      await ctx.send(i)
+
+      try:
+          msg = await client.wait_for('message', timeout=15.0, check=check)
+      except asyncio.TimeoutError:
+          await ctx.send('Tu n\'as pas répondu dans les temps! Recommence.')
+          return
+      else:
+          answers.append(msg.content)
+  try:
+      c_id = int(answers[0][2:-1])
+  except:
+      await ctx.send(f"Vous n'avez pas renseigné le channel correctement. Il doit-être renseigné de cette façon : {ctx.channel.mention}, la prochaine fois.")
+      return
+  channel = client.get_channel(c_id)
+  time = convert(answers[1])
+  if time == -1:
+      await ctx.send(f"Vous n'avez pas renseigné le temps avec la bonne unité. Utilisé (s|m|h|d) la prochaine fois !")
+      return
+  elif time == -2:
+      await ctx.send(f"Le temps doit être un entier. Rentrer un entier la prochaine fois.")
+      return            
+  prize = answers[2]
+  if int(prize) > users[str(ctx.author.id)]["wallet"]:
+    await ctx.send(f'({ctx.author}) Tu n\'as pas assez de points pour lancer ton giveway. ({prize}/{users[str(ctx.author.id)]["wallet"]})!')
+    return
+  
+  await ctx.send(f"Le giveway va être dans le salon {channel.mention} et va durer {answers[1]}!")
+
+  embed = discord.Embed(title = "Giveaway!", description = f"{prize}", color = ctx.author.color)
+  embed.add_field(name = "Lancé par :", value = ctx.author.mention)
+  embed.set_footer(text = f"Se termine dans {answers[1]} à partir de maintenant !")
+  my_msg = await channel.send(embed = embed)
+
+  await my_msg.add_reaction("✅")
+
+  await asyncio.sleep(time)
+
+  new_msg = await channel.fetch_message(my_msg.id)
+
+  users = await new_msg.reactions[0].users().flatten()
+  users.pop(users.index(client.user))
+  winner = random.choice(users)
+
+  await channel.send(f"Résultat du Giveaway lancé par {ctx.author}. Bravo à {winner.mention} qui a gagné {prize} Coins !")
+  
+  users = await get_bank_data()
+
+  users[str(winner.id)]["wallet"] += int(prize)
+  users[str(ctx.author.id)]["wallet"] -= int(prize)
+  with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
 
 
 #------------------------------------------------#
@@ -539,9 +634,6 @@ async def open_account(user):
     users[str(user.id)]["beg"] = 0
     users[str(user.id)]["give"] = 0
     users[str(user.id)]["pitier"] = 0
-
-  with open(os.getenv('RANK_JSON'),"w") as f:
-      json.dump(rank,f)
 
   with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
