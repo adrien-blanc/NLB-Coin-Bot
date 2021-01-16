@@ -61,8 +61,13 @@ async def interest():
 #                                                #
 #------------------------------------------------#
 
+<<<<<<< HEAD
 @client.command(aliases = ["rank"])
 async def leaderboard(ctx,x = 5):
+=======
+@client.command()
+async def rank(ctx, param:int):
+>>>>>>> aff0b5409e2525d0b8d847d5f81d82d6b0d0ccd4
   users = await get_bank_data()
   leader_board = {}
   total = []
@@ -85,7 +90,12 @@ async def leaderboard(ctx,x = 5):
       else:
           index += 1
 
+<<<<<<< HEAD
   await ctx.send(embed = em)
+=======
+  for u in users:
+    pass
+>>>>>>> aff0b5409e2525d0b8d847d5f81d82d6b0d0ccd4
 
 
 #------------------------------------------------#
@@ -93,7 +103,11 @@ async def leaderboard(ctx,x = 5):
 #                      Bet                       #
 #                                                #
 #------------------------------------------------#
+<<<<<<< HEAD
 """
+=======
+
+>>>>>>> aff0b5409e2525d0b8d847d5f81d82d6b0d0ccd4
 
 @client.command()
 async def bet(ctx, param:int):
@@ -156,7 +170,11 @@ async def on_reaction_add(reaction, user):
       with open(os.getenv('BET_JSON'),"w") as f:
         json.dump(bet,f)
       await ctx.send(f"Nouveau vote : ✅")
+<<<<<<< HEAD
     """      
+=======
+          
+>>>>>>> aff0b5409e2525d0b8d847d5f81d82d6b0d0ccd4
 
 
 #------------------------------------------------#
@@ -530,6 +548,7 @@ async def gCAll(ctx):
 async def open_account(user):
   users = await get_bank_data()
 
+<<<<<<< HEAD
   if str(user.id) in users:
     return False
   else:
@@ -545,6 +564,17 @@ async def open_account(user):
 
   with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
+=======
+    if str(user.id) in users:
+      return False
+    else:
+      users[str(user.id)] = {}
+      users[str(user.id)]["wallet"] = 0
+      users[str(user.id)]["bank"] = 200
+      users[str(user.id)]["beg"] = 0
+      users[str(user.id)]["give"] = 0
+      users[str(user.id)]["pitier"] = 0
+>>>>>>> aff0b5409e2525d0b8d847d5f81d82d6b0d0ccd4
 
 
 #------------------------------------------------#
