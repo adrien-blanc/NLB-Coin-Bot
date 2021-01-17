@@ -56,6 +56,42 @@ async def interest():
     with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
 
+
+client.checkInterest = False
+@tasks.loop(seconds=86000)
+async def giveW():
+
+  users = await get_bank_data()
+
+  duree = "30m"
+
+  channel = client.get_channel(564860126448713753)
+  time = convert(duree)      
+  prize = "500"
+
+  embed = discord.Embed(title = "Giveaway journalier!", description = f"{prize} Coins", color = 1752220)
+  embed.set_footer(text = f"Se termine dans {duree} à partir de maintenant !")
+  my_msg = await channel.send(embed = embed)
+
+  await my_msg.add_reaction("✅")
+
+  await asyncio.sleep(time)
+
+  new_msg = await channel.fetch_message(my_msg.id)
+
+  users = await new_msg.reactions[0].users().flatten()
+  users.pop(users.index(client.user))
+  winner = random.choice(users)
+
+  await channel.send(f"Résultat du Giveaway : Bravo à {winner.mention} qui a gagné {prize} Coins !")
+  
+  users = await get_bank_data()
+
+  users[str(winner.id)]["wallet"] += int(prize)
+  with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
+
+
 #------------------------------------------------#
 #                                                #
 #                  LeaderBoard                   #
@@ -158,7 +194,7 @@ async def giveaway(ctx):
   
   await ctx.send(f"Le giveway va être dans le salon {channel.mention} et va durer {answers[1]}!")
 
-  embed = discord.Embed(title = "Giveaway!", description = f"{prize}", color = ctx.author.color)
+  embed = discord.Embed(title = "Giveaway!", description = f"{prize} Coins", color = ctx.author.color)
   embed.add_field(name = "Lancé par :", value = ctx.author.mention)
   embed.set_footer(text = f"Se termine dans {answers[1]} à partir de maintenant !")
   my_msg = await channel.send(embed = embed)
@@ -666,5 +702,6 @@ async def on_ready():
   reset.start()
   freePoint.start()
   interest.start()
+  giveW.start()
 
 client.run(os.getenv('TOKEN'))
