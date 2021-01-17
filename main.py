@@ -194,11 +194,8 @@ async def giveaway(ctx):
   
   await ctx.send(f"Le giveway va être dans le salon {channel.mention} et va durer {answers[1]}!")
 
-<<<<<<< HEAD
+
   embed = discord.Embed(title = "Giveaway!", description = f"{prize} Coins", color = ctx.author.color)
-=======
-  embed = discord.Embed(title = "Giveaway!", description = f"{prize}", color = ctx.author.color)
->>>>>>> e340449a4a2697f6e37d799588fcbd87b53425bc
   embed.add_field(name = "Lancé par :", value = ctx.author.mention)
   embed.set_footer(text = f"Se termine dans {answers[1]} à partir de maintenant !")
   my_msg = await channel.send(embed = embed)
