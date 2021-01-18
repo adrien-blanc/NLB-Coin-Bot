@@ -6,90 +6,11 @@ import os
 import json
 import random
 import asyncio
+import aiocron
 
 client = commands.Bot(command_prefix = "!")
 
-#------------------------------------------------#
-#                                                #
-#           Timer point + Reset BEG              #
-#                                                #
-#------------------------------------------------#
 
-client.checkReset = False
-@tasks.loop(seconds=86000)
-async def reset():
-  if client.checkReset == False :
-    client.checkReset = True
-  else:
-    print("reset")
-    users = await get_bank_data()
-    for user in users:
-      users[str(user)]["beg"] = 0
-      users[str(user)]["give"] = 0
-      users[str(user)]["pitier"] = 0
-    with open(os.getenv('USER_JSON'),"w") as f:
-      json.dump(users,f)
-
-client.checkFree = False
-@tasks.loop(seconds=3600)
-async def freePoint():
-  if client.checkFree == False :
-    client.checkFree = True
-  else:
-    print("freePoint")
-    users = await get_bank_data()
-    for user in users:
-      users[str(user)]["wallet"] += 5
-    with open(os.getenv('USER_JSON'),"w") as f:
-      json.dump(users,f)
-
-client.checkInterest = False
-@tasks.loop(seconds=86000)
-async def interest():
-  if client.checkInterest == False :
-    client.checkInterest = True
-  else:
-    print("interest")
-    users = await get_bank_data()
-    for user in users:
-      users[str(user)]["bank"] =  ceil(users[str(user)]["bank"]*1.01)
-    with open(os.getenv('USER_JSON'),"w") as f:
-      json.dump(users,f)
-
-
-client.checkInterest = False
-@tasks.loop(seconds=86000)
-async def giveW():
-
-  users = await get_bank_data()
-
-  duree = "30m"
-
-  channel = client.get_channel(564860126448713753)
-  time = convert(duree)      
-  prize = "500"
-
-  embed = discord.Embed(title = "Giveaway journalier!", description = f"{prize} Coins", color = 1752220)
-  embed.set_footer(text = f"Se termine dans {duree} à partir de maintenant !")
-  my_msg = await channel.send(embed = embed)
-
-  await my_msg.add_reaction("✅")
-
-  await asyncio.sleep(time)
-
-  new_msg = await channel.fetch_message(my_msg.id)
-
-  users = await new_msg.reactions[0].users().flatten()
-  users.pop(users.index(client.user))
-  winner = random.choice(users)
-
-  await channel.send(f"Résultat du Giveaway : Bravo à {winner.mention} qui a gagné {prize} Coins !")
-  
-  users = await get_bank_data()
-
-  users[str(winner.id)]["wallet"] += int(prize)
-  with open(os.getenv('USER_JSON'),"w") as f:
-      json.dump(users,f)
 
 
 #------------------------------------------------#
@@ -219,76 +140,146 @@ async def giveaway(ctx):
   with open(os.getenv('USER_JSON'),"w") as f:
       json.dump(users,f)
 
-
 #------------------------------------------------#
 #                                                #
 #                      Bet                       #
 #                                                #
 #------------------------------------------------#
-"""
 
 @client.command()
-async def bet(ctx, param:int):
+async def bet(ctx):
 
   user = ctx.author
   users = await get_bank_data()
-  react = await get_reaction_data()
   userWallet = users[str(user.id)]["wallet"]
 
-  if userWallet < param:
-    await ctx.send(f"({user.name}) | Vous n'avez pas assez de Coins. ({userWallet}/{param})")
-  else:
-    await ctx.send(f"({user.name}) | Quel pari voulez-vous faire ?")
+  questions = ["Sur quel channel ?", 
+              "Quel est la durée de ton bet ? (s|m|h|d) | Ex : *30m* pour 30 minutes.",
+              "Quel est le prix pour participer ?",
+              "Quel pari voulez vous faire ?"]
+  answers = []
+  def check(m):
+      return m.author == ctx.author and m.channel == ctx.channel 
 
-  def checkMessage(message):
-    return message.author == ctx.message.author
+  for i in questions:
+      await ctx.send(i)
 
-  try:
-    pari = await client.wait_for("message", timeout = 60, check = checkMessage)
-    message = await ctx.send(f"**{pari.content}** | Veuillez votez en réagissant avec ✅ ou avec ❌ | Somme pour parier ({param})")
-    
-    react["reaction_message"] = {}
-    react["reaction_message"]["id"] = message.id
-    with open(os.getenv('REACT_JSON'),"w") as f:
-      json.dump(react,f)
-
-    await message.add_reaction("✅")
-    await message.add_reaction("❌")
-
-    def checkEmoji(reaction, user):
-      return ctx.message.author == user and message.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
-
-    try:
-      reaction, user = await client.wait_for("reaction_add", timeout = 60, check = checkEmoji)
-      if reaction.emoji == "✅":
-        await ctx.send(f"Fin du vote ! Résultat : ✅")
+      try:
+          msg = await client.wait_for('message', timeout=60.0, check=check)
+      except asyncio.TimeoutError:
+          await ctx.send('Tu n\'as pas répondu dans les temps! Recommence.')
+          return
       else:
-        await ctx.send(f"Fin du vote ! Résultat : ❌")
-    except:
-      await ctx.send("Le pari est fermé.")
-
+          answers.append(msg.content)
+  try:
+      c_id = int(answers[0][2:-1])
   except:
-    await ctx.send("Veuillez réitérer la commande.")
+      await ctx.send(f"Vous n'avez pas renseigné le channel correctement. Il doit-être renseigné de cette façon : {ctx.channel.mention}, la prochaine fois.")
+      return
+  channel = client.get_channel(c_id)
+  time = convert(answers[1])
+  if time == -1:
+      await ctx.send(f"Vous n'avez pas renseigné le temps avec la bonne unité. Utilisé (s|m|h|d) la prochaine fois !")
+      return
+  elif time == -2:
+      await ctx.send(f"Le temps doit être un entier. Rentrer un entier la prochaine fois.")
+      return            
+  prize = answers[2]
+  if int(prize) > users[str(ctx.author.id)]["bank"]:
+    await ctx.send(f'({ctx.author}) Tu n\'as pas assez de points pour lancer ton giveway. ({prize}/{users[str(ctx.author.id)]["bank"]})!')
     return
 
-@client.event
-async def on_reaction_add(reaction, user):
-  react = await get_reaction_data()
-  bet = await get_bet_data()
+  pari = answers[3]
 
-  channel = react["reaction_message"]["id"]
-  print(channel)
-  if reaction.message.channel.id != channel:
-    print("False")
-    return False
+  embed = discord.Embed(title = "Bet !", description = f"**{pari}**", color = 15844367)
+  embed.add_field(name = "Coins", value = prize, inline=True)
+  embed.add_field(name = "Lancé par : ", value = ctx.author.mention, inline=True)
+  embed.set_footer(text = f"Se termine dans {answers[1]} à partir de maintenant !")
+  my_msg = await channel.send(embed = embed)
+
+  await my_msg.add_reaction("✅")
+  await my_msg.add_reaction("❌")
+
+  await asyncio.sleep(time)
+
+  new_msg = await channel.fetch_message(my_msg.id)
+
+  usersTrue = await new_msg.reactions[0].users().flatten()
+  usersTrue.pop(usersTrue.index(client.user))
+  for u in usersTrue:
+    if users[str(u.id)]["bank"] < int(prize) :
+      usersTrue.pop(usersTrue.index(u))
+
+  usersFalse = await new_msg.reactions[1].users().flatten()
+  usersFalse.pop(usersFalse.index(client.user))
+  for u in usersFalse:
+    if users[str(u.id)]["bank"] < int(prize) :
+      usersFalse.pop(usersFalse.index(u))
+
+  message = await channel.send(f"{ctx.author} | Le bet est finit, quel était le bon choix ?")
+  await message.add_reaction("✅")
+  await message.add_reaction("❌")
+
+  def checkEmoji(reaction, user):
+      return ctx.message.author == user and message.id == reaction.message.id and (str(reaction.emoji) == "✅" or str(reaction.emoji) == "❌")
+
+  reaction, user = await client.wait_for("reaction_add", check = checkEmoji)
+  if reaction.emoji == "✅":
+    countT=0
+    countF=0
+    for u in usersTrue:
+      countT += 1
+    for u in usersFalse:
+      countF += 1
+    
+    if countT == 0:
+      await ctx.send(f"Personne ne gagne le Bet.")
+      for user in usersFalse:
+        users[str(user.id)]["bank"] -= int(prize)
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+      return False
+    else:
+      count = countT+countF
+      gain = (int(prize)*count)/countT
+      await channel.send(f"Fin du vote ! Résultat : ✅")
+      for user in usersTrue:
+        await channel.send(f"Bravo à {user} qui a gagné {gain} Coins !")
+        users[str(user.id)]["bank"] -= int(prize)
+        users[str(user.id)]["bank"] += int(gain)
+      for user in usersFalse:
+        users[str(user.id)]["bank"] -= int(prize)
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+
+
   else:
-    if reaction.emoji == "✅":
-      print("testBET")
-      bet[str(user.id)]["name"] = user.name
-      with open(os.getenv('BET_JSON'),"w") as f:
-        json.dump(bet,f)
-      await ctx.send(f"Nouveau vote : ✅")
-    """      
+    countT=0
+    countF=0
+    for user in usersTrue:
+      countT += 1
+    for user in usersFalse:
+      countF += 1
+
+    if countF == 0:
+      await ctx.send(f"Personne ne gagne le Bet.")
+      for user in usersTrue:
+        users[str(user.id)]["bank"] -= int(prize)
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)
+      return False
+    else:    
+      count = countT+countF
+      gain = (int(prize)*count)/countF
+      await channel.send(f"Fin du vote ! Résultat : ❌")
+      for user in usersTrue:
+        users[str(user.id)]["bank"] -= int(prize)
+      for user in usersFalse:
+        await channel.send(f"Bravo à {user} qui a gagné {gain} Coins !")
+        users[str(user.id)]["bank"] -= int(prize)
+        users[str(user.id)]["bank"] += int(gain)
+      with open(os.getenv('USER_JSON'),"w") as f:
+        json.dump(users,f)  
 
 
 #------------------------------------------------#
@@ -687,11 +678,6 @@ async def get_bank_data():
     users = json.load(f)
   return users
 
-async def get_reaction_data():
-  with open(os.getenv('REACT_JSON'),"r") as f:
-    react = json.load(f)
-  return react
-
 async def get_bet_data():
   with open(os.getenv('BET_JSON'),"r") as f:
     bet = json.load(f)
@@ -700,9 +686,82 @@ async def get_bet_data():
 @client.event
 async def on_ready():
   print('Bot NLB est prêt !' )
-  reset.start()
-  freePoint.start()
-  interest.start()
-  giveW.start()
+  asyncio.get_event_loop().run_forever()
+  
+
+#------------------------------------------------#
+#                                                #
+#           Timer point + Reset BEG              #
+#                                                #
+#------------------------------------------------#
+
+
+@aiocron.crontab('0 0 * * *')
+async def reset():
+ 
+  print("reset")
+  users = await get_bank_data()
+  for user in users:
+    users[str(user)]["beg"] = 0
+    users[str(user)]["give"] = 0
+    users[str(user)]["pitier"] = 0
+  with open(os.getenv('USER_JSON'),"w") as f:
+    json.dump(users,f)
+
+client.checkFree = False
+@aiocron.crontab('0 * * * *')
+async def freePoint():
+  
+  print("freePoint")
+  users = await get_bank_data()
+  for user in users:
+    users[str(user)]["wallet"] += 5
+  with open(os.getenv('USER_JSON'),"w") as f:
+    json.dump(users,f)
+
+@aiocron.crontab('0 23 * * *')
+async def interest():
+  
+  print("interest")
+  users = await get_bank_data()
+  for user in users:
+    users[str(user)]["bank"] =  ceil(users[str(user)]["bank"]*1.01)
+  with open(os.getenv('USER_JSON'),"w") as f:
+    json.dump(users,f)
+
+
+@aiocron.crontab('0 22 * * *')
+async def giveW():
+  users = await get_bank_data()
+
+  duree = "30m"
+
+  channel = client.get_channel(637209521202266124)
+  time = convert(duree)      
+  prize = "500"
+
+  embed = discord.Embed(title = "Giveaway journalier!", description = f"{prize} Coins", color = 1752220)
+  embed.set_footer(text = f"Se termine dans {duree} à partir de maintenant !")
+  my_msg = await channel.send(embed = embed)
+
+  await my_msg.add_reaction("✅")
+
+  await asyncio.sleep(time)
+
+  new_msg = await channel.fetch_message(my_msg.id)
+
+  users = await new_msg.reactions[0].users().flatten()
+  users.pop(users.index(client.user))
+  winner = random.choice(users)
+
+  await channel.send(f"Résultat du Giveaway : Bravo à {winner.mention} qui a gagné {prize} Coins !")
+  
+  users = await get_bank_data()
+
+  users[str(winner.id)]["wallet"] += int(prize)
+  with open(os.getenv('USER_JSON'),"w") as f:
+      json.dump(users,f)
+
+
 
 client.run(os.getenv('TOKEN'))
