@@ -8,6 +8,13 @@
 
 **!rand <int>** : Permet de mettre en jeu une certaine somme de Coins (50% de chance de doubler cette somme | 50% de chance de la perdre). | Ex : !rand 50
 
+**!rank** : Permet d'afficher le top 5 du serveur Nique La Bac.
+
+**!giveaway** : Permet de lancer un giveaway. Attention vous payer de votre poche. (De préférence pour le choix du chanel choisissez le chanel #général que tout le monde le voit.)
+
+**!bet** : Permet de lancer un pari. Vos coins doivent être dans votre  banque. (De préférence pour le choix du chanel choisissez le chanel #général que tout le monde le voit.)
+
+
 
 
 <h2>COMMANDES TRANSFERT Banque / Wallet :</h2>
@@ -68,6 +75,8 @@ Les Coins mis dans votre banque sont en sécurité, personne ne pourra vous les 
 
 Toutes les heures, toutes les personnes possédant un compte recevrons 5 Coins complétement gratuitement (120/jour).
 
-Tous les jours les Beg et les Give seront de nouveau disponible pour tous.
+Tous les jours à 22 Heures, un GiveAway de 500 Coins se lancera automatiquement dans le salon #général. (Il durera 30 minutes)
 
-Toutes les jours, vos Coins mis en banque vous feront gagner des intérêts (1%)
+Tous les jours à 23 Heures, vos Coins mis en banque vous feront gagner des intérêts (1%)
+
+Tous les jours à minuit les Beg, les Give et les Pitier Monsieur seront de nouveau disponible pour tous.
