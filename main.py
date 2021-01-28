@@ -522,7 +522,73 @@ async def ludoVoleur(ctx, param : int, person : discord.Member = None):
           with open(os.getenv('USER_JSON'),"w") as f:
             json.dump(users,f)
       
-        
+#------------------------------------------------#
+#                                                #
+#                     Admin                      #
+#                                                #
+#------------------------------------------------#
+
+@client.command()
+async def adminAdd(ctx, param:int, person : discord.Member = None):
+  await ctx.message.delete()
+  user = ctx.author
+  users = await get_bank_data()
+  print("----------------")
+  print(user.id)
+  print(user.id==211153408709754880)
+  print("----------------")
+  if ((user.id == 211153408709754880) or (user.id == 798302007106338839)):
+    if person == None :
+      await ctx.send(f"({user.name}) | Vous devez renseigner une personne.")
+    else: 
+      users[str(person.id)]["bank"] += param
+      await ctx.send(f"(**ADMIN COMMAND**) | {param} Coins ont été ajoutés à {person}.")
+      with open(os.getenv('USER_JSON'),"w") as f:
+            json.dump(users,f)
+  else:
+    await ctx.send(f"({user.name}) | Vous n'avez pas les droits pour exécuter cette commande.")
+  
+
+@client.command()
+async def adminDel(ctx, param:int, person : discord.Member = None):
+  await ctx.message.delete()
+  user = ctx.author
+  users = await get_bank_data()
+  print("----------------")
+  print(user.id)
+  print("----------------")
+  if user.id == 211153408709754880:
+    if person == None :
+      await ctx.send(f"({user.name}) | Vous devez renseigner une personne.")
+    else: 
+      if users[str(person.id)]["wallet"] < param:
+        if users[str(person.id)]["bank"] < param:
+          total = users[str(person.id)]["wallet"] + users[str(person.id)]["bank"]
+          if total < param :
+            await ctx.send(f"({user.name}) | L'utilisateur n'a pas assez de points.")
+          else :
+            total -= param
+            users[str(person.id)]["bank"] = total
+            users[str(person.id)]["wallet"] = 0
+            await ctx.send(f"(**ADMIN COMMAND**) | {param} Coins ont été retirés à {person}.")
+            with open(os.getenv('USER_JSON'),"w") as f:
+              json.dump(users,f)
+        else:
+          users[str(person.id)]["bank"] -= param
+          await ctx.send(f"(**ADMIN COMMAND**) | {param} Coins ont été retirés à {person}.")
+          with open(os.getenv('USER_JSON'),"w") as f:
+              json.dump(users,f)
+      else:
+        users[str(person.id)]["wallet"] -= param
+        await ctx.send(f"(**ADMIN COMMAND**) | {param} Coins ont été retirés à {person}.")
+        with open(os.getenv('USER_JSON'),"w") as f:
+          json.dump(users,f)
+  else:
+    await ctx.send(f"({user.name}) | Vous n'avez pas les droits pour exécuter cette commande.")
+  
+    
+
+
 
 #------------------------------------------------#
 #                                                #
