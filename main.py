@@ -557,7 +557,7 @@ async def adminDel(ctx, param:int, person : discord.Member = None):
   print("----------------")
   print(user.id)
   print("----------------")
-  if user.id == 211153408709754880:
+  if ((user.id == 211153408709754880) or (user.id == 798302007106338839)):
     if person == None :
       await ctx.send(f"({user.name}) | Vous devez renseigner une personne.")
     else: 
