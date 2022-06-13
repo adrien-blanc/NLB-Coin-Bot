@@ -1,4 +1,4 @@
-<h1>Voici les commandes que vous pourrez utiliser avec le BOT Nique La Bac :</h1>
+<h1>Voici les commandes que vous pourrez utiliser avec le BOT NLB :</h1>
 
 <h2>COMMANDES PRINCIPALES :</h2>
 
