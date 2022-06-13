@@ -1,6 +1,14 @@
-<h1>Voici les commandes que vous pourrez utiliser avec le BOT NLB :</h1>
+# READ_ME - BOT Coin NLB
+## Description
+Ce projet a été crée dans l'objectif de fournir un petit BOT [Discord](https://discord.com/) sur mon serveur privé pour pouvoir jouer avec mes amis.
+Ce BOT est le premier de ma longue série de BOT Discord, il n'est donc pas très évolué ... La "BDD" est stockée sous la forme d'un fichier JSON ce qui peut poser problème en lors d'insertion simultané en asynchrone de données dans cette dernière. 
 
-<h2>COMMANDES PRINCIPALES :</h2>
+## How to deploy
+Remplacer tout en bas du fichier main.py, le token par le token de votre BOT. Vous trouverez votre token sur la page des [développeur](https://discord.com/developers) de Discord.
+
+## Voici les commandes que vous pourrez utiliser avec le BOT NLB :
+
+### COMMANDES PRINCIPALES :
 
 **!balance <pseudo>** : Permet de voir l'état de vos comptes ou du compte d'un ami. | Permet également d'initialiser votre compte. | Ex : !balance ou !balance @Ursule
 
@@ -17,7 +25,7 @@
 
 
 
-<h2>COMMANDES TRANSFERT Banque / Wallet :</h2>
+### COMMANDES TRANSFERT Banque / Wallet :
 
 Transférer des Coins dans votre banque : 
 
@@ -26,7 +34,7 @@ Transférer des Coins dans votre banque :
 **!tCAll** : Permet de transférer tout votre Wallet dans votre banque. 
 
 
-<h3>Transférer des Coins dans votre Wallet :</h3>
+#### Transférer des Coins dans votre Wallet :
 
 **!gC <int>** : Permet de transférer une somme définit dans votre Wallet | Ex : !gC 50
 
@@ -34,7 +42,7 @@ Transférer des Coins dans votre banque :
 
 
 
-<h3>Transférer des Coins User / User  :</h3>
+#### Transférer des Coins User / User  :
 
 Si vous voulez donner des Coins à votre meilleur ami (C'est franchement sympa) /!\ Vous ne pourrez donner qu'une fois par jour /!\  :
 
@@ -47,7 +55,7 @@ Si vous voulez voler quelques Coins à votre "meilleur" ami, juste Let's GO pren
 **!ludoVoleur <int> <pseudo>** : Permet d'avoir une chance de voler les précieux Coins d'une personne. | Ex : !ludoVoleur 50 @Ursule
 
 
-<h2>COMMANDES AVANTAGES Coins  :</h2>
+### COMMANDES AVANTAGES Coins  :
 
 C'est bien beau d'acquérir tous ces Coins, mais a quoi servent-ils ? 
 Voici une liste des commandes à utiliser contre des Coins : 
@@ -63,13 +71,13 @@ Mute (vocal) une personne de votre choix :
 Prix : **2000 Coins**
 **!mute <pseudo>** : Permet de mute une personne du serveur pendant 1 jour (Des exceptions pourront-être faites si le jour en question est important !) | Ex : !mute @Ursule
 
-<h2>COMMANDES OH SHIT :</h2>
+### COMMANDES OH SHIT :
 
 Si vous venez a être à court de Coins, ne pas paniquer, une commande est faites pour vous : 
 
 **!pitierMonsieur** : Vous redonne 50 Coins gratuitement si votre Wallet et votre banque sont inférieurs à 10 Coins.
 
-<h2>REGLES PRINCIPALES : </h2>
+### REGLES PRINCIPALES :
 
 Les Coins mis dans votre banque sont en sécurité, personne ne pourra vous les voler, même avec un !ludoVoleur sauvage.
 
